@@ -1,6 +1,6 @@
 {
-    "watch": [ "src", "nodemon.json", "ormconfig.json" ],
-    "ext": "ts json",
+    "watch": [ "src" ],
+    "ext": "ts json hbs",
     "ignore": [ "src/**/*.spec.ts" ],
     "exec": "ts-node ./src/index.ts"
   }
