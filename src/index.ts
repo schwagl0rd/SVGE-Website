@@ -1,5 +1,6 @@
 require('dotenv').config(); // inject values in .env into environment variables
 import * as Config from "./config/_configs";
+const debug = require('debug')("startup");
 
 import 'reflect-metadata';
 import { createConnection } from 'typeorm';
@@ -11,14 +12,16 @@ import * as express from 'express';
 const app = express();
 Config.handlebars.init(app);
 
+debug(`Attempting to connect to database "${Config.data.database}" on ${Config.data.host}:${Config.data.port}.`);
 createConnection(Config.data.settings)
     .then(async (connection) =>
     {
+        debug(`Connected! Starting Express server...`);
         const server = useExpressServer(app, Config.server.settings).listen(Config.server.port);
-        console.log(`Express server listening on port ${Config.server.port}.`);
-        console.log(`Connected to database "${Config.data.database}" on ${Config.data.host}:${Config.data.port}.`);
+        debug(`Express server listening on port ${Config.server.port}.`);
+        
     })
     .catch((error) =>
     {
-        console.log(error);
+        debug(error);
     });

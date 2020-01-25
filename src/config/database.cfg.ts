@@ -17,7 +17,8 @@ export namespace data
         password: process.env.DB_PASSWORD,
         database: database,
         synchronize: true,
-        logging: false,
+        logging: true,
+        logger: "advanced-console",
         entities: [ __dirname + "/../api/models/**/*.ts" ],
         migrations: [ __dirname + "/../api/migrations/*.ts" ],
         subscribers: [ __dirname + "/../api/subscribers/*.ts" ]
