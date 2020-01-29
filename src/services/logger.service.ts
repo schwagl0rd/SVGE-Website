@@ -30,9 +30,8 @@ export namespace logger
 					resTime + " ms"
 				].join(" ");
 
-				const statusColor = (200 <= status && status < 300) ?
-					successColor : (300 <= status && status < 400) ?
-					redirectColor : failColor;
+				const statusColor = (200 <= status && status < 300) ? successColor : 
+					(300 <= status && status < 400) ? redirectColor : failColor;
 
 				const date = [
 					"\n  time:",

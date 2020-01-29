@@ -2,25 +2,60 @@ import { ConnectionOptions } from "typeorm";
 
 export namespace data
 {
-    // once TypeORM casts these to a specific adapter interface
-    // you can't access them anymore, so just exproting these here
-    // so that we can access them for things like console logs
     export const port = parseInt(process.env.DB_PORT);
     export const host = process.env.DB_HOST;
-    export const database = process.env.DB_DATABASE;
 
-    export const settings : ConnectionOptions = {
+    const siteOptions : ConnectionOptions = {
+        name: "site",
         type: "mysql",
         host: host,
         port: port,
         username: process.env.DB_USERNAME,
         password: process.env.DB_PASSWORD,
-        database: database,
+        database: process.env.DB_DATABASE_SITE,
         synchronize: true,
-        logging: true,
-        logger: "advanced-console",
-        entities: [ __dirname + "/../api/models/**/*.ts" ],
-        migrations: [ __dirname + "/../api/migrations/*.ts" ],
-        subscribers: [ __dirname + "/../api/subscribers/*.ts" ]
+        //logging: ["info", "warn", "error"], <-- handled by "typeorm:info" etc in .env
+        logger: "debug",
+        entities: [ __dirname + "/../api/data/site/models/**/*.ent.ts" ],
+        //migrations: [ __dirname + "/../api/data/site/migrations/**/*.ent.ts" ],
+        //subscribers: [ __dirname + "/../api/data/site/subscribers/**/*.ent.ts" ]
     };
+
+    const botOptions : ConnectionOptions = {
+        name: "bot",
+        type: "mysql",
+        host: host,
+        port: port,
+        username: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_DATABASE_BOT,
+        synchronize: true,
+        //logging: ["info", "warn", "error"], <-- handled by "typeorm:info" etc in .env
+        logger: "debug",
+        entities: [ __dirname + "/../api/data/bot/models/**/*.ent.ts" ],
+        //migrations: [ __dirname + "/../api/data/bot/migrations/**/*.ent.ts" ],
+        //subscribers: [ __dirname + "/../api/data/bot/subscribers/**/*.ent.ts" ]
+    };
+
+    const gmodOptions : ConnectionOptions = {
+        name: "gmod",
+        type: "mysql",
+        host: host,
+        port: port,
+        username: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_DATABASE_GMOD,
+        synchronize: true,
+        //logging: ["info", "warn", "error"], <-- handled by "typeorm:info" etc in .env
+        logger: "debug",
+        entities: [ __dirname + "/../api/data/gmod/models/**/*.ent.ts" ],
+        //migrations: [ __dirname + "/../api/data/gmod/migrations/**/*.ent.ts" ],
+        //subscribers: [ __dirname + "/../api/data/gmod/subscribers/**/*.ent.ts" ]
+    };
+
+    export const settings : ConnectionOptions[] = [
+        siteOptions,
+        botOptions,
+        gmodOptions
+    ];
 }
