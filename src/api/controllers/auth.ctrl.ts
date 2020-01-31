@@ -4,7 +4,7 @@ import * as passport from 'passport';
 import { Request, Response } from 'express';
 
 const debugAuth = require('debug')("auth");
-const debugRoutes = require('debug')("routes")
+const debugRoutes = require('debug')("routes");
 
 
 
@@ -19,6 +19,8 @@ export class AuthController
 	@UseBefore(passport.authenticate("discord"))
 	private async redirect(@Req() req : Request, @Res() res : Response)
 	{
+		// this throws an exception as Passport tries to set the
+		// redirect header a second time
 		const redirect = req.session.oauth2return || "/";
 		res.redirect(redirect);
 	}

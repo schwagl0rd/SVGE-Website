@@ -18,7 +18,7 @@ Services.logger.init(app); // log express with Morgan (must go after routes are 
 
 debug(`Attempting to connect to databases on ${Configs.data.host}:${Configs.data.port}...`);
 createConnections(Configs.data.settings)
-    .then(async (connection) =>
+    .then(async (connections) =>
     {
         debug(`Connected! Starting Discord bot...`);
         Services.DiscordBot.init();
