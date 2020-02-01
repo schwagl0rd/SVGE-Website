@@ -1,20 +1,34 @@
-import { Controller, Get, Render, Authorized, Post, QueryParam, QueryParams, UploadedFile, UploadOptions } from "routing-controllers";
+import { Controller, Get, Render, Authorized, Post, QueryParam, QueryParams, UploadedFiles, UploadOptions } from "routing-controllers";
 import { GmodQuote } from "../data/gmod/models/quotes.ent";
-import { readdirSync, renameSync } from "fs";
+import { readdirSync } from "fs";
 import { join, basename } from "path";
 import { IsString } from "class-validator";
 import * as Config from "../../config/_configs";
 import { File } from "../../config/_configs";
 
+// Jimp is a little retarded
+import Jimp from 'jimp';
+import { Z_FILTERED } from "zlib";
+// tslint:disable-next-line: no-var-requires
+const jimp : Jimp = require('jimp');
 
+const uploadOptions : UploadOptions = {
+    options: Config.Uploads.gmodScreenshots,
+    required: true
+};
 
-class GmodSplashQuery
+class GmodQuoteQuery
 {
     @IsString()
-    mapName : string;
+    quote : string;
+
     @IsString()
-    steamId : string;
+    author : string;
 }
+
+const SC_WIDTH = 500;
+const SC_HEIGHT = 500;
+const whRatio = SC_WIDTH / SC_HEIGHT;
 
 @Controller("/gmod-splash")
 export class GmodSplashController
@@ -69,24 +83,62 @@ export class GmodSplashController
         };
     }
 
-    static uploadOptions : UploadOptions = {
-        options: Config.Uploads.gmodScreenshots,
-        required: true
-    };
-
-    @Post("/screenshot")
+    @Post("/edit/screenshot")
     @Authorized("GMod Rep")
-    private async AddScreenshot(@UploadedFile("newScreenshot", this.uploadOptions) file : File)
+    private async AddScreenshot(@UploadedFiles("newScreenshots", uploadOptions) files : File[])
     {
-        // do some checks
-        // do some image manipulation
-        return renameSync(file.path, `../../public/images/gmod/${file.originalname}`);
+        files.forEach(async (file : File) =>
+        {
+            if(file)
+            {
+                // should do some basic checks and wrap this lot in some try/catches
+                const img = await jimp.read(file.buffer);
+                const width = img.getWidth();
+                const height = img.getHeight();
+                const ar = width / height; // aspect ratio
+                if(ar > whRatio)
+                {
+                    img.resize(jimp.AUTO, SC_HEIGHT);
+                    const newWidth = img.getWidth();
+                    img.crop(
+                        (width - SC_WIDTH) / 2, // x zero
+                        0, // y zero
+                        SC_WIDTH, // width
+                        SC_HEIGHT // height
+                    );
+                }
+                else
+                {
+                    img.resize(SC_WIDTH, jimp.AUTO);
+                    const newHeight = height / ar;
+                    img.crop(
+                        0, // x zero
+                        (newHeight - SC_HEIGHT) / 2, // y zero
+                        SC_WIDTH, // width
+                        SC_HEIGHT // height
+                    );
+                }
+                img.write(`${__dirname}/../../public/images/gmod/${encodeURIComponent(file.originalname)}`);
+            }
+            else
+            {
+                // throw an error? Idk
+                // probably means Multer wouldn't accept the file for some reason
+            }
+        });
+        return {
+            numberOfFiles: files.length
+        };
     }
 
-    @Post("/quote")
+    @Post("/edit/quote")
     @Authorized("GMod Rep")
-    private async AddQuote(@QueryParams() quote : GmodQuote)
+    public async AddQuote(@QueryParams() q : any)
     {
+        const quote = new GmodQuote();
+        quote.quote =  q.quote;
+        quote.author = q.author;
+
         return quote.save();
     }
 }
